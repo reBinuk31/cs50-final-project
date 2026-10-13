@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>JobTrack | Job Application Tracker</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <strong>JobTrack</strong>
+        <a href="/">Dashboard</a>
+    </nav>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <p class="flash {{ category }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <section class="welcome">
+            <div>
+                <h1>Track your job applications</h1>
+                <p>Keep all your applications organised in one place.</p>
+            </div>
+            <a class="primary-button" href="/add">+ Add application</a>
+        </section>
+
+        <section class="summary-cards">
+            <div class="summary-card">
+                <h3>Total Applications</h3>
+                <p>{{ applications | length }}</p>
+            </div>
+
+            <div class="summary-card">
+                <h3>Applied</h3>
+                <p>{{ applications | selectattr("status", "equalto", "Applied") | list | length }}</p>
+            </div>
+
+            <div class="summary-card">
+                <h3>Interviews</h3>
+                <p>{{ applications | selectattr("status", "equalto", "Interview") | list | length }}</p>
+            </div>
+
+            <div class="summary-card">
+                <h3>Offers</h3>
+                <p>{{ applications | selectattr("status", "equalto", "Offer") | list | length }}</p>
+            </div>
+        </section>
+        <h2>Your Applications</h2>
+
+        <input
+            type="text"
+            id="applicationSearch"
+            placeholder="Search by company or job title..."
+            onkeyup="searchApplications()"
+        >
+
+        {% if applications %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Company</th>
+                        <th>Job title</th>
+                        <th>Date applied</th>
+                        <th>Notes</th>
+                        <th>Status</th>
+                        <th>Details</th>
+                        <th>Edit</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for application in applications %}
+                        <tr>
+                            <td>{{ application["company"] }}</td>
+                            <td>{{ application["job_title"] }}</td>
+                            <td>{{ application["date_applied"] }}</td>
+                            <td>{{ application["notes"] or "—" }}</td>
+                            <td>
+                                <form action="/update_status" method="post">
+                                    <input
+                                        type="hidden"
+                                        name="application_id"
+                                        value="{{ application['id'] }}"
+                                    >
+
+                                    <select name="status" onchange="this.form.submit()">
+                                        {% for status_option in ["Applied", "Interview", "Offer", "Rejected"] %}
+                                            <option
+                                                value="{{ status_option }}"
+                                                {% if application["status"] == status_option %}selected{% endif %}
+                                            >
+                                                {{ status_option }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </form>
+                            </td>
+                            <td>
+                                <a href="/details/{{ application['id'] }}">View details</a>
+                            </td>
+                            <td>
+                                <a href="{{ url_for('edit_application', application_id=application['id']) }}">
+                                    Edit
+                                </a>
+                            </td>
+                            <td>
+                                <form action="/delete/{{ application['id'] }}" method="post"
+                                    onsubmit="return confirm('Are you sure you want to delete this application?');">
+                                    <button type="submit">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>You haven't added any applications yet.</p>
+        {% endif %}
+    </main>
+<script>
+    function searchApplications() {
+        const input = document.getElementById("applicationSearch");
+        const filter = input.value.toLowerCase();
+        const rows = document.querySelectorAll("tbody tr");
+
+        rows.forEach(function(row) {
+            const company = row.cells[0].textContent.toLowerCase();
+            const jobTitle = row.cells[1].textContent.toLowerCase();
+
+            if (company.includes(filter) || jobTitle.includes(filter)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
+</script>
+</body>
+</html>

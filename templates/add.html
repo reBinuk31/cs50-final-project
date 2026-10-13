@@ -1,0 +1,56 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Add Application | JobTrack</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <nav>
+        <strong>JobTrack</strong>
+        <a href="/">Dashboard</a>
+    </nav>
+
+    <main>
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <div class="flash-messages">
+                    {% for category, message in messages %}
+                        <p class="flash {{ category }}">{{ message }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+        <h1>Add a Job Application</h1>
+        <p>Enter the details of the job you're applying for.</p>
+
+        <form action="/add" method="post">
+            <label for="company">Company name</label>
+            <input type="text" id="company" name="company" value="{{ form_data.get('company', '') }}" required>
+
+            <label for="job_title">Job title</label>
+            <input type="text" id="job_title" name="job_title" value="{{ form_data.get('job_title', '') }}" required>
+
+            <label for="date_applied">Date applied</label>
+            <input type="date" id="date_applied" name="date_applied" value="{{ form_data.get('date_applied', '') }}" required>
+
+            <label for="job_url">Job link (optional)</label>
+            <input type="url" id="job_url" name="job_url" value="{{ form_data.get('job_url', '') }}">
+
+
+            <div class="form-group">
+                <label for="notes">Notes (optional)</label>
+                <textarea
+                    id="notes"
+                    name="notes"
+                    placeholder="Recruiter details, interview notes, follow-up reminders..."
+                    rows="4"
+                >{{ form_data.get('notes', '') }}</textarea>
+            </div>
+            <button type="submit">Save application</button>
+        </form>
+    </main>
+</body>
+</html>
